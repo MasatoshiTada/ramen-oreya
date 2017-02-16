@@ -3,20 +3,18 @@ package com.example.service.impl;
 import com.example.common.exception.GoodsCacheContradictionException;
 import com.example.service.GoodsService;
 import com.example.service.dto.Goods;
+import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.cloud.client.ServiceInstance;
-import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.cloud.client.loadbalancer.LoadBalanced;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpMethod;
-import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import java.net.URI;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -28,37 +26,33 @@ public class GoodsServiceImpl implements GoodsService {
 
     private final RestTemplate restTemplate;
     private final String goodsServiceUrl;
-    private final DiscoveryClient discoveryClient;
 
     private Map<Integer, Goods> goodsCache;
 
     public GoodsServiceImpl(@LoadBalanced RestTemplate restTemplate,
-                            @Value("${goods-service.url}") String goodsServiceUrl,
-                            DiscoveryClient discoveryClient) {
+                            @Value("${goods-service.url}") String goodsServiceUrl) {
         this.restTemplate = restTemplate;
         this.goodsServiceUrl = goodsServiceUrl;
-        this.discoveryClient = discoveryClient;
     }
 
-//    @PostConstruct
+    @HystrixCommand(fallbackMethod = "createDefaultGoods")
     @Override
     public void loadAll() {
-        // FIXME Eurekaで名前解決できてない(DiscoveryClientでIPアドレスやポート番号は取得できる)
-        List<ServiceInstance> instances = discoveryClient.getInstances("goods-service");
-        ServiceInstance serviceInstance = instances.get(0);
-        String host = serviceInstance.getHost();
-        int port = serviceInstance.getPort();
-        String uri = serviceInstance.getUri().toString();
-        logger.info(instances.toString());
-        logger.info("host:port = " + host + ":" + port);
-        logger.info("uri = " + uri);
-        RequestEntity<Void> requestEntity = RequestEntity.get(URI.create(goodsServiceUrl + "v1/goods")).build();
-        ResponseEntity<List<Goods>> responseEntity = restTemplate.exchange(goodsServiceUrl + "v1/goods", HttpMethod.GET, null, new ParameterizedTypeReference<List<Goods>>() {});
+        ResponseEntity<List<Goods>> responseEntity =
+                restTemplate.exchange(goodsServiceUrl + "api/goods", HttpMethod.GET,
+                        null, new ParameterizedTypeReference<List<Goods>>() {});
         goodsCache = responseEntity.getBody()
                 .stream()
                 .collect(Collectors.toMap(goods -> goods.id, goods -> goods));
-        String json = restTemplate.getForObject(goodsServiceUrl + "v1/goods", String.class);
-        logger.info(json);
+        if (goodsCache.isEmpty()) {
+            logger.error("商品が読み込めませんでした");
+        } else {
+            logger.info(goodsCache.size() + "件の商品を読み込みました");
+        }
+    }
+
+    public void createDefaultGoods() {
+        goodsCache = Collections.EMPTY_MAP;
     }
 
     @Override
