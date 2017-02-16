@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>未提供注文一覧</title>
+    <link rel="stylesheet" href="../static/style.css" th:href="@{/style.css}">
+</head>
+<body>
+<h1>未提供注文一覧</h1>
+<h2 th:if="${#lists.isEmpty(orderSummaryList)}">未提供の商品はありません</h2>
+<table border="1" th:unless="${#lists.isEmpty(orderSummaryList)}">
+    <tr>
+        <th>注文日時</th>
+        <th>詳細</th>
+    </tr>
+    <tr th:each="orderSummary : ${orderSummaryList}" th:object="${orderSummary}">
+        <td th:text="*{#temporals.format(orderTimestamp, 'HH時mm分ss秒')}">10時10分10秒</td>
+        <td>
+            <table border="1">
+                <tr>
+                    <th>品目</th>
+                    <th>数量</th>
+                </tr>
+                <tr th:each="orderDetail : ${orderSummary.orderDetails}" th:object="${orderDetail}">
+                    <td th:text="*{goods.name}">ラーメン並</td>
+                    <td th:text="*{amount}">1</td>
+                </tr>
+            </table>
+        </td>
+        <td>
+            <form th:action="@{'/' + ${orderSummary.summaryId}}" action="index.html" method="post">
+                <input type="submit" value="提供完了">
+            </form>
+        </td>
+    </tr>
+</table>
+</body>
+</html>

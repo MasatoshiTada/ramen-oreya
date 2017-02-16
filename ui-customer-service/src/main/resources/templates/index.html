@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>商品一覧</title>
+    <link rel="stylesheet" href="../static/style.css" th:href="@{/style.css}">
+</head>
+<body>
+<h1>メニューを選択してください</h1>
+<form th:action="@{/}" action="orderComplete.html" method="post">
+    <table border="1">
+        <tr>
+            <th>商品名</th>
+            <th>価格</th>
+            <th>カテゴリ</th>
+            <th>数量</th>
+        </tr>
+        <tr th:each="goods : ${goodsList}" th:object="${goods}">
+            <td th:text="*{name}">らーめん</td>
+            <td th:text="*{price}">価格</td>
+            <td th:text="*{category.name}">カテゴリ</td>
+            <td>
+                <select th:name="*{'goodsId_' + id}">
+                    <option>0</option>
+                    <option>1</option>
+                    <option>2</option>
+                    <option>3</option>
+                </select>
+            </td>
+        </tr>
+    </table>
+    <input type="submit" value="注文確定">
+</form>
+</body>
+</html>
