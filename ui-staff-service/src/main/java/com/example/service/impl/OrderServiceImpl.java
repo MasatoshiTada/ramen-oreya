@@ -30,7 +30,7 @@ public class OrderServiceImpl implements OrderService {
 
     public OrderServiceImpl(@LoadBalanced RestTemplate restTemplate,
                             GoodsService goodsService,
-                            @Value("${order-service.url}") String orderServiceUrl) {
+                            @Value("${orders.url}") String orderServiceUrl) {
         this.restTemplate = restTemplate;
         this.goodsService = goodsService;
         this.orderServiceUrl = orderServiceUrl;
@@ -39,7 +39,7 @@ public class OrderServiceImpl implements OrderService {
     @HystrixCommand(fallbackMethod = "createDefaultOrders")
     @Override
     public List<OrderSummary> findAllNotProvided() {
-        RequestEntity<Void> requestEntity = RequestEntity.get(URI.create(orderServiceUrl + "orders")).build();
+        RequestEntity<Void> requestEntity = RequestEntity.get(URI.create(orderServiceUrl)).build();
         ResponseEntity<List<OrderSummary>> responseEntity =
                 restTemplate.exchange(requestEntity, new ParameterizedTypeReference<List<OrderSummary>>() {
                 });
@@ -61,6 +61,6 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public void updateProvided(Integer summaryId) {
-        restTemplate.patchForObject(orderServiceUrl + "orders/{summaryId}", null, Void.class, summaryId);
+        restTemplate.patchForObject(orderServiceUrl + "/{summaryId}", null, Void.class, summaryId);
     }
 }

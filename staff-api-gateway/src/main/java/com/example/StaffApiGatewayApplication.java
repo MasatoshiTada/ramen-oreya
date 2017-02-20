@@ -3,17 +3,15 @@ package com.example;
 import org.apache.catalina.filters.RequestDumperFilter;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.autoconfigure.domain.EntityScan;
-import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
+import org.springframework.cloud.netflix.zuul.EnableZuulProxy;
 import org.springframework.context.annotation.Bean;
 
+@EnableZuulProxy
 @SpringBootApplication
-@EntityScan(basePackages = {"com.example.entity", "org.springframework.data.jpa.convert.threeten"})
-@EnableDiscoveryClient
-public class OrderServiceApplication {
+public class StaffApiGatewayApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(OrderServiceApplication.class, args);
+        SpringApplication.run(StaffApiGatewayApplication.class, args);
     }
 
     @Bean

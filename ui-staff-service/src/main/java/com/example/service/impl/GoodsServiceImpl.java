@@ -30,7 +30,7 @@ public class GoodsServiceImpl implements GoodsService {
     private Map<Integer, Goods> goodsCache;
 
     public GoodsServiceImpl(@LoadBalanced RestTemplate restTemplate,
-                            @Value("${goods-service.url}") String goodsServiceUrl) {
+                            @Value("${goods.url}") String goodsServiceUrl) {
         this.restTemplate = restTemplate;
         this.goodsServiceUrl = goodsServiceUrl;
     }
@@ -39,7 +39,7 @@ public class GoodsServiceImpl implements GoodsService {
     @Override
     public void loadAll() {
         ResponseEntity<List<Goods>> responseEntity =
-                restTemplate.exchange(goodsServiceUrl + "api/goods", HttpMethod.GET,
+                restTemplate.exchange(goodsServiceUrl, HttpMethod.GET,
                         null, new ParameterizedTypeReference<List<Goods>>() {});
         goodsCache = responseEntity.getBody()
                 .stream()

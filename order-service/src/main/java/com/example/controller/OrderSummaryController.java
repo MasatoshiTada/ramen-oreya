@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/orders")
+@RequestMapping("/api/orders")
 public class OrderSummaryController {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());

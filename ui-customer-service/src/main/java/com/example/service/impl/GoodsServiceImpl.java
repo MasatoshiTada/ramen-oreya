@@ -22,7 +22,7 @@ public class GoodsServiceImpl implements GoodsService {
     private final String goodsServiceUrl;
 
     public GoodsServiceImpl(@LoadBalanced RestTemplate restTemplate,
-                            @Value("${goods-service.url}") String goodsServiceUrl) {
+                            @Value("${goods.url}") String goodsServiceUrl) {
         this.restTemplate = restTemplate;
         this.goodsServiceUrl = goodsServiceUrl;
     }
@@ -30,7 +30,7 @@ public class GoodsServiceImpl implements GoodsService {
     @HystrixCommand(fallbackMethod = "getDefaultGoods")
     @Override
     public List<Goods> findAll() {
-        RequestEntity<Void> requestEntity = RequestEntity.get(URI.create(goodsServiceUrl + "api/goods")).build();
+        RequestEntity<Void> requestEntity = RequestEntity.get(URI.create(goodsServiceUrl)).build();
         ResponseEntity<List<Goods>> responseEntity =
                 restTemplate.exchange(requestEntity, new ParameterizedTypeReference<List<Goods>>() {});
         List<Goods> goodsList = responseEntity.getBody();
