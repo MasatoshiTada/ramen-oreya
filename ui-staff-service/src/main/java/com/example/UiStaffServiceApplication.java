@@ -1,6 +1,7 @@
 package com.example;
 
 import com.example.service.GoodsService;
+import org.apache.catalina.filters.RequestDumperFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,6 +47,11 @@ public class UiStaffServiceApplication {
     public RestTemplate restTemplate(RestTemplateBuilder builder) {
         return builder.detectRequestFactory(true)
                 .build();
+    }
+
+    @Bean
+    RequestDumperFilter requestDumperFilter() {
+        return new RequestDumperFilter();
     }
 
 }

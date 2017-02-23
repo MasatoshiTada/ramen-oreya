@@ -1,0 +1,12 @@
+---
+applications:
+  - name: ramen-order-service
+    path: target/order-service-0.0.1-SNAPSHOT.jar
+    buildpack: java_buildpack
+    random-route: false
+    memory: 1G
+    services:
+     - config-server
+     - service-registry
+     - postgresql
+     - circuit-breaker-dashboard

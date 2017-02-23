@@ -1,0 +1,11 @@
+---
+applications:
+  - name: ramen-staff-api-gateway
+    path: target/staff-api-gateway-0.0.1-SNAPSHOT.jar
+    buildpack: java_buildpack
+    random-route: false
+    memory: 1G
+    services:
+     - config-server
+     - service-registry
+     - circuit-breaker-dashboard
