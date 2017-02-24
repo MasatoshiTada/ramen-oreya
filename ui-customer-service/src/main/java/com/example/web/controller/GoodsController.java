@@ -55,7 +55,8 @@ public class GoodsController {
                     orderDetail.goodsId = Integer.valueOf(entry.getKey().split("_")[1]);
                     orderDetail.amount = Integer.valueOf(entry.getValue());
                     return orderDetail;
-                }).filter(orderDetail -> !orderDetail.amount.equals(0))
+                })
+                .filter(orderDetail -> !orderDetail.amount.equals(0))
                 .collect(Collectors.toList());
         OrderSummary orderSummary = new OrderSummary();
         orderSummary.orderDetails = orderDetailList;
