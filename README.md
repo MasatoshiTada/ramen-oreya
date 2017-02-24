@@ -50,9 +50,10 @@ http://localhost:8080/
 
 ```bash
 cf login -a api.run.pivotal.io
-cf create-service p-config-server standart config-server -c '{"git": {"cloneOnStart": "true","uri": "https://github.com/MasatoshiTada/ramen-config"}}'
-cf create-service p-service-registry service-registry
-cf create-service p-circuit-breaker-dashboard circuit-breaker-dashboard
+cf create-service p-config-server standard config-server -c '{"git": {"cloneOnStart": "true","uri": "https://github.com/MasatoshiTada/ramen-config"}}'
+cf create-service p-service-registry standard service-registry
+cf create-service p-circuit-breaker-dashboard standard circuit-breaker-dashboard
+cf create-service elephantsql turtle postgresql
 
 ./build-all.sh
 cd $PROJECT_ROOT/goods-service
