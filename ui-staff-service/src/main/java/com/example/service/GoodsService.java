@@ -2,9 +2,9 @@ package com.example.service;
 
 import com.example.service.dto.Goods;
 
+import java.util.Map;
+
 public interface GoodsService {
 
-    void loadAll();
-
-    Goods findById(Integer id);
+    Map<Integer, Goods> findByIds(Integer[] ids);
 }

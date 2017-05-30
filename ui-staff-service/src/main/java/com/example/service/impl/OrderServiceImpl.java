@@ -2,6 +2,7 @@ package com.example.service.impl;
 
 import com.example.service.GoodsService;
 import com.example.service.OrderService;
+import com.example.service.dto.Goods;
 import com.example.service.dto.OrderDetail;
 import com.example.service.dto.OrderSummary;
 import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
@@ -18,6 +19,7 @@ import org.springframework.web.client.RestTemplate;
 import java.net.URI;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class OrderServiceImpl implements OrderService {
@@ -46,16 +48,23 @@ public class OrderServiceImpl implements OrderService {
         List<OrderSummary> orderList = responseEntity.getBody();
         logger.info("OrderSummaryのサイズ＝" + orderList.size());
         logger.info("0番目のOrderDetails = " + orderList.get(0).orderDetails);
+
+        Integer[] goodsIds = orderList.stream()
+                .flatMap(orderSummary -> orderSummary.orderDetails.stream())
+                .map(orderDetail -> orderDetail.goodsId)
+                .toArray(Integer[]::new);
+        Map<Integer, Goods> goodsMap = goodsService.findByIds(goodsIds);
+
         for (OrderSummary orderSummary : orderList) {
             for (OrderDetail orderDetail : orderSummary.orderDetails) {
-                orderDetail.goods = goodsService.findById(orderDetail.goodsId);
+                orderDetail.goods = goodsMap.get(orderDetail.goodsId);
             }
         }
         return orderList;
     }
 
-    public List<OrderSummary> createDefaultOrders() {
-        logger.error("order-serviceへの接続に失敗しました。フォールバックします。");
+    public List<OrderSummary> createDefaultOrders(Throwable throwable) {
+        logger.error("order-serviceへの接続に失敗しました。フォールバックします。", throwable);
         return Collections.emptyList();
     }
 
