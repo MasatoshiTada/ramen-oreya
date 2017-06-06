@@ -12,8 +12,8 @@ import java.util.List;
 
 public interface OrderSummaryRepository extends JpaRepository<OrderSummary, Integer> {
 
-    @Query("SELECT DISTINCT os FROM OrderSummary os JOIN FETCH os.orderDetails WHERE os.provided = FALSE ORDER BY os.orderTimestamp ASC")
-    List findAllNotProvided();
+    @Query("SELECT DISTINCT os FROM OrderSummary os JOIN FETCH os.orderDetails WHERE os.shopId = :shopId AND os.provided = FALSE ORDER BY os.orderTimestamp ASC")
+    List findAllByShopIdNotProvided(@Param("shopId") String shopId);
 
     @Transactional(propagation = Propagation.REQUIRED)
     @Modifying

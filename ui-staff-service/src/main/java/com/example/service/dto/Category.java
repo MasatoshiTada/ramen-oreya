@@ -4,9 +4,25 @@ import java.io.Serializable;
 
 public class Category implements Serializable {
 
-    public Integer id;
+    private Integer id;
 
-    public String name;
+    private String name;
+
+    public Integer getId() {
+        return id;
+    }
+
+    public void setId(Integer id) {
+        this.id = id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
 
     @Override
     public boolean equals(Object o) {
@@ -15,14 +31,15 @@ public class Category implements Serializable {
 
         Category category = (Category) o;
 
-        if (id != null ? !id.equals(category.id) : category.id != null) return false;
-        return name != null ? name.equals(category.name) : category.name == null;
+        if (getId() != null ? !getId().equals(category.getId()) : category.getId() != null) return false;
+        return getName() != null ? getName().equals(category.getName()) : category.getName() == null;
     }
 
     @Override
     public int hashCode() {
-        int result = id != null ? id.hashCode() : 0;
-        result = 31 * result + (name != null ? name.hashCode() : 0);
+        int result = getId() != null ? getId().hashCode() : 0;
+        result = 31 * result + (getName() != null ? getName().hashCode() : 0);
         return result;
     }
+
 }

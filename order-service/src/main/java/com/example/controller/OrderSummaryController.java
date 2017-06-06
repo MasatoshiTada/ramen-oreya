@@ -11,7 +11,6 @@ import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBui
 
 import java.net.URI;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/orders")
@@ -26,17 +25,17 @@ public class OrderSummaryController {
     }
 
     @GetMapping
-    public List<OrderSummary> findAll() {
-        return orderSummaryRepository.findAllNotProvided();
+    public List<OrderSummary> findAll(@RequestParam("shopId") String shopId) {
+        return orderSummaryRepository.findAllByShopIdNotProvided(shopId);
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public ResponseEntity order(@RequestBody OrderSummary orderSummary) {
-        orderSummary.provided = false;
-        logger.info("注文された商品 = " + orderSummary.orderDetails.size());
+        orderSummary.setProvided(false);
+        logger.info("注文された商品 = " + orderSummary.getOrderDetails().size());
         orderSummaryRepository.save(orderSummary);
-        URI location = createLocation(orderSummary.summaryId);
+        URI location = createLocation(orderSummary.getSummaryId());
         return ResponseEntity.created(location).build();
     }
 

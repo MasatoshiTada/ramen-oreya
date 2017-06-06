@@ -44,7 +44,7 @@ public class GoodsServiceImpl implements GoodsService {
                         null, new ParameterizedTypeReference<List<Goods>>() {});
         Map<Integer, Goods> goodsMap = responseEntity.getBody()
                 .stream()
-                .collect(Collectors.toMap(goods -> goods.id, goods -> goods));
+                .collect(Collectors.toMap(goods -> goods.getId(), goods -> goods));
         return goodsMap;
     }
 }

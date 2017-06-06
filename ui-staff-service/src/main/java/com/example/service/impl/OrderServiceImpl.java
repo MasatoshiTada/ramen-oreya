@@ -38,6 +38,9 @@ public class OrderServiceImpl implements OrderService {
         this.orderServiceUrl = orderServiceUrl;
     }
 
+    /**
+     * API Gateway経由でorder-serviceから未提供の注文一覧を取得する。
+     */
     @HystrixCommand(fallbackMethod = "createDefaultOrders")
     @Override
     public List<OrderSummary> findAllNotProvided() {
@@ -47,27 +50,35 @@ public class OrderServiceImpl implements OrderService {
                 });
         List<OrderSummary> orderList = responseEntity.getBody();
         logger.info("OrderSummaryのサイズ＝" + orderList.size());
-        logger.info("0番目のOrderDetails = " + orderList.get(0).orderDetails);
+        logger.info("0番目のOrderDetails = " + orderList.get(0).getOrderDetails());
 
         Integer[] goodsIds = orderList.stream()
-                .flatMap(orderSummary -> orderSummary.orderDetails.stream())
-                .map(orderDetail -> orderDetail.goodsId)
+                .flatMap(orderSummary -> orderSummary.getOrderDetails().stream())
+                .map(orderDetail -> orderDetail.getGoodsId())
                 .toArray(Integer[]::new);
         Map<Integer, Goods> goodsMap = goodsService.findByIds(goodsIds);
 
         for (OrderSummary orderSummary : orderList) {
-            for (OrderDetail orderDetail : orderSummary.orderDetails) {
-                orderDetail.goods = goodsMap.get(orderDetail.goodsId);
+            for (OrderDetail orderDetail : orderSummary.getOrderDetails()) {
+                orderDetail.setGoods(goodsMap.get(orderDetail.getGoodsId()));
             }
         }
         return orderList;
     }
 
+    /**
+     * 注文一覧取得に対するフォールバックメソッド。
+     * キャッシュしていた注文一覧を返す。
+     */
     public List<OrderSummary> createDefaultOrders(Throwable throwable) {
         logger.error("order-serviceへの接続に失敗しました。フォールバックします。", throwable);
         return Collections.emptyList();
     }
 
+    /**
+     * 指定した注文を「提供済み」に更新する。
+     * @param summaryId
+     */
     @Override
     public void updateProvided(Integer summaryId) {
         restTemplate.patchForObject(orderServiceUrl + "/{summaryId}", null, Void.class, summaryId);

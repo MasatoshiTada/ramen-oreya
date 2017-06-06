@@ -13,9 +13,33 @@ public class OrderDetail implements Serializable {
             sequenceName = "seq_order_detail_id",
             initialValue = 1,
             allocationSize = 1)
-    public Integer detailId;
+    private Integer detailId;
 
-    public Integer goodsId;
+    private Integer goodsId;
 
-    public Integer amount;
+    private Integer amount;
+
+    public Integer getDetailId() {
+        return detailId;
+    }
+
+    public void setDetailId(Integer detailId) {
+        this.detailId = detailId;
+    }
+
+    public Integer getGoodsId() {
+        return goodsId;
+    }
+
+    public void setGoodsId(Integer goodsId) {
+        this.goodsId = goodsId;
+    }
+
+    public Integer getAmount() {
+        return amount;
+    }
+
+    public void setAmount(Integer amount) {
+        this.amount = amount;
+    }
 }
