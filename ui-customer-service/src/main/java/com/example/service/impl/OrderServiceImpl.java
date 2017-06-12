@@ -25,8 +25,8 @@ public class OrderServiceImpl implements OrderService {
 
     // TODO POST操作に@HystrixCommandは付けるのか？
     @Override
-    public void order(OrderSummary orderSummary) {
+    public void order(String shopId, OrderSummary orderSummary) {
         logger.info(orderServiceUrl + "に" + orderSummary.orderDetails.size() + "件を注文します");
-        restTemplate.postForLocation(orderServiceUrl, orderSummary);
+        restTemplate.postForLocation(orderServiceUrl, orderSummary, shopId);
     }
 }

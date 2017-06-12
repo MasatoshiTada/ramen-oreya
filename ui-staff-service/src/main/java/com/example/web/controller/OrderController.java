@@ -2,6 +2,10 @@ package com.example.web.controller;
 
 import com.example.service.OrderService;
 import com.example.service.dto.OrderSummary;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -12,8 +16,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import java.util.List;
 
 @Controller
-@RequestMapping("/")
+@RequestMapping("/order")
 public class OrderController {
+
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private final OrderService orderService;
 
@@ -23,7 +29,10 @@ public class OrderController {
 
     @GetMapping
     public String index(Model model) {
-        List<OrderSummary> orderSummaryList = orderService.findAllNotProvided();
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String shopId = authentication.getName();
+        logger.info("shopId = {}の注文一覧を取得します...", shopId);
+        List<OrderSummary> orderSummaryList = orderService.findAllNotProvided(shopId);
         model.addAttribute("orderSummaryList", orderSummaryList);
         return "index";
     }

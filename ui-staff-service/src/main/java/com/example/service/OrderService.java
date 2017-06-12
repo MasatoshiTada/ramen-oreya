@@ -6,7 +6,7 @@ import java.util.List;
 
 public interface OrderService {
 
-    List<OrderSummary> findAllNotProvided();
+    List<OrderSummary> findAllNotProvided(String shopId);
 
     void updateProvided(Integer summaryId);
 }

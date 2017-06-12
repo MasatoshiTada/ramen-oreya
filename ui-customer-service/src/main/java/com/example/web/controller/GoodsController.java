@@ -5,6 +5,9 @@ import com.example.service.OrderService;
 import com.example.service.dto.Goods;
 import com.example.service.dto.OrderDetail;
 import com.example.service.dto.OrderSummary;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.session.data.redis.config.annotation.web.http.EnableRedisHttpSession;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,7 +20,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @Controller
-@RequestMapping("/")
+@RequestMapping("/goods")
 public class GoodsController {
 
     private final GoodsService goodsService;
@@ -35,10 +38,12 @@ public class GoodsController {
         return "index";
     }
 
-    @PostMapping
+    @PostMapping("/order")
     public String order(@RequestParam Map<String, String> params) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String shopId = authentication.getName();
         OrderSummary orderSummary = convertToOrderSummary(params);
-        orderService.order(orderSummary);
+        orderService.order(shopId, orderSummary);
         return "redirect:orderComplete";
     }
 
@@ -50,6 +55,7 @@ public class GoodsController {
     private OrderSummary convertToOrderSummary(Map<String, String> params) {
         List<OrderDetail> orderDetailList = params.entrySet()
                 .stream()
+                .filter(entry -> entry.getKey().startsWith("goodsId_"))
                 .map(entry -> {
                     OrderDetail orderDetail = new OrderDetail();
                     orderDetail.goodsId = Integer.valueOf(entry.getKey().split("_")[1]);

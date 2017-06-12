@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import java.net.URI;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -43,12 +44,14 @@ public class OrderServiceImpl implements OrderService {
      */
     @HystrixCommand(fallbackMethod = "createDefaultOrders")
     @Override
-    public List<OrderSummary> findAllNotProvided() {
-        RequestEntity<Void> requestEntity = RequestEntity.get(URI.create(orderServiceUrl)).build();
-        ResponseEntity<List<OrderSummary>> responseEntity =
-                restTemplate.exchange(requestEntity, new ParameterizedTypeReference<List<OrderSummary>>() {
-                });
-        List<OrderSummary> orderList = responseEntity.getBody();
+    public List<OrderSummary> findAllNotProvided(String shopId) {
+//        RequestEntity<Void> requestEntity = RequestEntity.get(URI.create(orderServiceUrl)).build();
+//        ResponseEntity<List<OrderSummary>> responseEntity =
+//                restTemplate.exchange(requestEntity, new ParameterizedTypeReference<List<OrderSummary>>() {
+//                });
+//        List<OrderSummary> orderList = responseEntity.getBody();
+        OrderSummary[] orders = restTemplate.getForObject(orderServiceUrl, OrderSummary[].class, shopId);
+        List<OrderSummary> orderList = Arrays.asList(orders);
         logger.info("OrderSummaryのサイズ＝" + orderList.size());
         logger.info("0番目のOrderDetails = " + orderList.get(0).getOrderDetails());
 
@@ -70,7 +73,7 @@ public class OrderServiceImpl implements OrderService {
      * 注文一覧取得に対するフォールバックメソッド。
      * キャッシュしていた注文一覧を返す。
      */
-    public List<OrderSummary> createDefaultOrders(Throwable throwable) {
+    public List<OrderSummary> createDefaultOrders(String shopId, Throwable throwable) {
         logger.error("order-serviceへの接続に失敗しました。フォールバックします。", throwable);
         return Collections.emptyList();
     }

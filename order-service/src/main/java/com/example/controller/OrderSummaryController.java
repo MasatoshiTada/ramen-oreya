@@ -24,15 +24,16 @@ public class OrderSummaryController {
         this.orderSummaryRepository = orderSummaryRepository;
     }
 
-    @GetMapping
-    public List<OrderSummary> findAll(@RequestParam("shopId") String shopId) {
+    @GetMapping("/{shopId}")
+    public List<OrderSummary> findAll(@PathVariable("shopId") String shopId) {
         return orderSummaryRepository.findAllByShopIdNotProvided(shopId);
     }
 
-    @PostMapping
+    @PostMapping("/{shopId}")
     @ResponseStatus(HttpStatus.CREATED)
-    public ResponseEntity order(@RequestBody OrderSummary orderSummary) {
+    public ResponseEntity order(@PathVariable("shopId") String shopId, @RequestBody OrderSummary orderSummary) {
         orderSummary.setProvided(false);
+        orderSummary.setShopId(shopId);
         logger.info("注文された商品 = " + orderSummary.getOrderDetails().size());
         orderSummaryRepository.save(orderSummary);
         URI location = createLocation(orderSummary.getSummaryId());

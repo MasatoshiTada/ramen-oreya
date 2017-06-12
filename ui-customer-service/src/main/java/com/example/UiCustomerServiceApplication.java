@@ -14,6 +14,12 @@ import org.springframework.http.HttpRequest;
 import org.springframework.http.client.ClientHttpRequestExecution;
 import org.springframework.http.client.ClientHttpRequestInterceptor;
 import org.springframework.http.client.ClientHttpResponse;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.session.data.redis.config.annotation.web.http.EnableRedisHttpSession;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.*;
@@ -21,6 +27,7 @@ import java.io.*;
 @SpringBootApplication
 @EnableDiscoveryClient
 @EnableCircuitBreaker
+@EnableRedisHttpSession
 public class UiCustomerServiceApplication {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
@@ -47,5 +54,38 @@ public class UiCustomerServiceApplication {
     @Bean
     RequestDumperFilter requestDumperFilter() {
         return new RequestDumperFilter();
+    }
+
+    @EnableWebSecurity
+    static class SecurityConfig extends WebSecurityConfigurerAdapter {
+        @Override
+        protected void configure(AuthenticationManagerBuilder auth) throws Exception {
+            auth.inMemoryAuthentication()
+                    .withUser("tokyo").password("password").roles("STAFF").and()
+                    .withUser("osaka").password("password").roles("STAFF");
+        }
+
+        @Override
+        protected void configure(HttpSecurity http) throws Exception {
+            http.sessionManagement()
+                    .sessionFixation().changeSessionId()
+                    .sessionCreationPolicy(SessionCreationPolicy.ALWAYS);
+            http.formLogin()
+                    .loginPage("/login")
+                    .defaultSuccessUrl("/goods", true)
+                    .failureUrl("/login?error")
+                    .usernameParameter("shopId")
+                    .passwordParameter("password")
+                    .permitAll();
+            http.logout()
+                    .logoutUrl("/logout")
+                    .clearAuthentication(true)
+                    .deleteCookies("JSESSIONID")
+                    .logoutSuccessUrl("/login")
+                    .permitAll();
+            http.authorizeRequests()
+                    .antMatchers("/resources/**").permitAll()
+                    .anyRequest().authenticated();
+        }
     }
 }

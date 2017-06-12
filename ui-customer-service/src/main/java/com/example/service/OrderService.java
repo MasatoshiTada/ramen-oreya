@@ -4,5 +4,5 @@ import com.example.service.dto.OrderSummary;
 
 public interface OrderService {
 
-    void order(OrderSummary orderSummary);
+    void order(String shopId, OrderSummary orderSummary);
 }

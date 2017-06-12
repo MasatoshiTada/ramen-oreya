@@ -1,13 +1,14 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+                xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
     <title>俺家 - お客様システム</title>
-    <link rel="stylesheet" href="../static/style.css" th:href="@{/style.css}">
+    <link rel="stylesheet" href="../static/resources/style.css" th:href="@{/resources/style.css}">
 </head>
 <body>
-<h1>メニューを選択してください</h1>
-<form th:action="@{/}" action="orderComplete.html" method="post">
+<h1><span sec:authentication="principal.username"></span>メニューを選択してください</h1>
+<form th:action="@{/goods/order}" action="orderComplete.html" method="post">
     <table border="1">
         <tr>
             <th>商品名</th>
@@ -30,6 +31,9 @@
         </tr>
     </table>
     <input type="submit" value="注文確定">
+</form>
+<form method="post" th:action="@{/logout}" action="login.html">
+    <input type="submit" value="ログアウト">
 </form>
 </body>
 </html>
