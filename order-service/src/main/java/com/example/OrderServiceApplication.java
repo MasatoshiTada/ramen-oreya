@@ -3,6 +3,7 @@ package com.example;
 import org.apache.catalina.filters.RequestDumperFilter;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.context.annotation.Bean;
@@ -17,6 +18,7 @@ public class OrderServiceApplication {
     }
 
     @Bean
+    @ConditionalOnProperty(name = "request.dump.enable", havingValue = "true")
     RequestDumperFilter requestDumperFilter() {
         return new RequestDumperFilter();
     }

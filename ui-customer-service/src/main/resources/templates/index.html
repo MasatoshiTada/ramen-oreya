@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="../static/resources/style.css" th:href="@{/resources/style.css}">
 </head>
 <body>
-<h1><span sec:authentication="principal.username"></span>メニューを選択してください</h1>
+<h1><span sec:authentication="principal.username">店舗名</span> - メニューを選択してください</h1>
 <form th:action="@{/goods/order}" action="orderComplete.html" method="post">
     <table border="1">
         <tr>
