@@ -38,9 +38,9 @@ public class OrderController {
     }
 
     @PostMapping("/{summaryId}")
-    public String updateProvided(@PathVariable Integer summaryId) {
+    public String updateProvided(@PathVariable("summaryId") Integer summaryId) {
         orderService.updateProvided(summaryId);
-        return "redirect:/";
+        return "redirect:/order";
     }
 
 }

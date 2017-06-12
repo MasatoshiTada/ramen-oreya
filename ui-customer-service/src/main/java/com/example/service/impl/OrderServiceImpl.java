@@ -27,6 +27,6 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public void order(String shopId, OrderSummary orderSummary) {
         logger.info(orderServiceUrl + "に" + orderSummary.orderDetails.size() + "件を注文します");
-        restTemplate.postForLocation(orderServiceUrl, orderSummary, shopId);
+        restTemplate.postForLocation(orderServiceUrl + "/shop/{shopId}", orderSummary, shopId);
     }
 }

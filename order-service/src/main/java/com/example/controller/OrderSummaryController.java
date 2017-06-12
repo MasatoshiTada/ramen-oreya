@@ -24,12 +24,12 @@ public class OrderSummaryController {
         this.orderSummaryRepository = orderSummaryRepository;
     }
 
-    @GetMapping("/{shopId}")
+    @GetMapping("/shop/{shopId}")
     public List<OrderSummary> findAll(@PathVariable("shopId") String shopId) {
         return orderSummaryRepository.findAllByShopIdNotProvided(shopId);
     }
 
-    @PostMapping("/{shopId}")
+    @PostMapping("/shop/{shopId}")
     @ResponseStatus(HttpStatus.CREATED)
     public ResponseEntity order(@PathVariable("shopId") String shopId, @RequestBody OrderSummary orderSummary) {
         orderSummary.setProvided(false);

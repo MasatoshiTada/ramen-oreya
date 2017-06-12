@@ -45,12 +45,7 @@ public class OrderServiceImpl implements OrderService {
     @HystrixCommand(fallbackMethod = "createDefaultOrders")
     @Override
     public List<OrderSummary> findAllNotProvided(String shopId) {
-//        RequestEntity<Void> requestEntity = RequestEntity.get(URI.create(orderServiceUrl)).build();
-//        ResponseEntity<List<OrderSummary>> responseEntity =
-//                restTemplate.exchange(requestEntity, new ParameterizedTypeReference<List<OrderSummary>>() {
-//                });
-//        List<OrderSummary> orderList = responseEntity.getBody();
-        OrderSummary[] orders = restTemplate.getForObject(orderServiceUrl, OrderSummary[].class, shopId);
+        OrderSummary[] orders = restTemplate.getForObject(orderServiceUrl + "/shop/{shopId}", OrderSummary[].class, shopId);
         List<OrderSummary> orderList = Arrays.asList(orders);
         logger.info("OrderSummaryのサイズ＝" + orderList.size());
         logger.info("0番目のOrderDetails = " + orderList.get(0).getOrderDetails());
