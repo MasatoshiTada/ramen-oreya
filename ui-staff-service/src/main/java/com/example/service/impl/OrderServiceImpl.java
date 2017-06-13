@@ -1,5 +1,7 @@
 package com.example.service.impl;
 
+import com.example.persistence.redis.dto.OrderSummaryListDto;
+import com.example.persistence.redis.repository.OrderSummaryListDtoRepository;
 import com.example.service.GoodsService;
 import com.example.service.OrderService;
 import com.example.service.dto.Goods;
@@ -21,6 +23,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class OrderServiceImpl implements OrderService {
@@ -30,13 +33,16 @@ public class OrderServiceImpl implements OrderService {
     private final RestTemplate restTemplate;
     private final GoodsService goodsService;
     private final String orderServiceUrl;
+    private final OrderSummaryListDtoRepository orderSummaryListDtoRepository;
 
     public OrderServiceImpl(@LoadBalanced RestTemplate restTemplate,
                             GoodsService goodsService,
-                            @Value("${orders.url}") String orderServiceUrl) {
+                            @Value("${orders.url}") String orderServiceUrl,
+                            OrderSummaryListDtoRepository orderSummaryListDtoRepository) {
         this.restTemplate = restTemplate;
         this.goodsService = goodsService;
         this.orderServiceUrl = orderServiceUrl;
+        this.orderSummaryListDtoRepository = orderSummaryListDtoRepository;
     }
 
     /**
@@ -45,10 +51,9 @@ public class OrderServiceImpl implements OrderService {
     @HystrixCommand(fallbackMethod = "createDefaultOrders")
     @Override
     public List<OrderSummary> findAllNotProvided(String shopId) {
+        logger.info("{}の注文一覧を取得します", shopId);
         OrderSummary[] orders = restTemplate.getForObject(orderServiceUrl + "/shop/{shopId}", OrderSummary[].class, shopId);
         List<OrderSummary> orderList = Arrays.asList(orders);
-        logger.info("OrderSummaryのサイズ＝" + orderList.size());
-        logger.info("0番目のOrderDetails = " + orderList.get(0).getOrderDetails());
 
         Integer[] goodsIds = orderList.stream()
                 .flatMap(orderSummary -> orderSummary.getOrderDetails().stream())
@@ -61,6 +66,10 @@ public class OrderServiceImpl implements OrderService {
                 orderDetail.setGoods(goodsMap.get(orderDetail.getGoodsId()));
             }
         }
+        // Redisにキャッシュ
+        OrderSummaryListDto orderSummaryListDto = new OrderSummaryListDto(shopId, orderList);
+        logger.info("取得した注文一覧をRedisに保存しました");
+        orderSummaryListDtoRepository.save(orderSummaryListDto);
         return orderList;
     }
 
@@ -70,7 +79,15 @@ public class OrderServiceImpl implements OrderService {
      */
     public List<OrderSummary> createDefaultOrders(String shopId, Throwable throwable) {
         logger.error("order-serviceへの接続に失敗しました。フォールバックします。", throwable);
-        return Collections.emptyList();
+        logger.info("Redisからキャッシュの注文一覧を取得します");
+        OrderSummaryListDto orderSummaryListDto = orderSummaryListDtoRepository.findOne(shopId);
+        if (orderSummaryListDto != null) {
+            logger.info("Redisに注文一覧がありました");
+            return orderSummaryListDto.getOrderSummaryList();
+        } else {
+            logger.error("Redisに注文一覧がありませんでした");
+            return Collections.emptyList();
+        }
     }
 
     /**
@@ -78,7 +95,19 @@ public class OrderServiceImpl implements OrderService {
      * @param summaryId
      */
     @Override
-    public void updateProvided(Integer summaryId) {
+    public void updateProvided(String shopId, Integer summaryId) {
+        logger.info("注文済みに更新します : shopId = {}, summaryId = {}", shopId, summaryId);
         restTemplate.patchForObject(orderServiceUrl + "/{summaryId}", null, Void.class, summaryId);
+        // Redisからキャッシュ取得
+        logger.info("Redisからキャッシュの注文一覧を取得します");
+        OrderSummaryListDto orderSummaryListDto = orderSummaryListDtoRepository.findOne(shopId);
+        // 更新した注文だけキャッシュから削除
+        List<OrderSummary> orderSummaryList = orderSummaryListDto.getOrderSummaryList();
+        List<OrderSummary> filteredOrderSummaryList = orderSummaryList.stream()
+                .filter(orderSummary -> orderSummary.getSummaryId().equals(summaryId) == false)
+                .collect(Collectors.toList());
+        // キャッシュに再保存
+        logger.info("Redisに注文一覧を再保存します");
+        orderSummaryListDtoRepository.save(new OrderSummaryListDto(shopId, filteredOrderSummaryList));
     }
 }

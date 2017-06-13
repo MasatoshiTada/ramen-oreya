@@ -8,5 +8,5 @@ public interface OrderService {
 
     List<OrderSummary> findAllNotProvided(String shopId);
 
-    void updateProvided(Integer summaryId);
+    void updateProvided(String shopId, Integer summaryId);
 }

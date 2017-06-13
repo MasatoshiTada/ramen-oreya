@@ -39,7 +39,9 @@ public class OrderController {
 
     @PostMapping("/{summaryId}")
     public String updateProvided(@PathVariable("summaryId") Integer summaryId) {
-        orderService.updateProvided(summaryId);
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String shopId = authentication.getName();
+        orderService.updateProvided(shopId, summaryId);
         return "redirect:/order";
     }
 
