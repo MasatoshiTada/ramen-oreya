@@ -8,5 +8,4 @@ public class OrderSummary implements Serializable {
     public List<OrderDetail> orderDetails;
 
     public String shopId;
-
 }

@@ -4,6 +4,8 @@ import com.example.entity.OrderSummary;
 import com.example.repository.OrderSummaryRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.cloud.stream.annotation.StreamListener;
+import org.springframework.cloud.stream.messaging.Sink;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -29,22 +31,11 @@ public class OrderSummaryController {
         return orderSummaryRepository.findAllByShopIdNotProvided(shopId);
     }
 
-    @PostMapping("/shop/{shopId}")
-    @ResponseStatus(HttpStatus.CREATED)
-    public ResponseEntity order(@PathVariable("shopId") String shopId, @RequestBody OrderSummary orderSummary) {
+    @StreamListener(Sink.INPUT)
+    public void order(OrderSummary orderSummary) {
         orderSummary.setProvided(false);
-        orderSummary.setShopId(shopId);
-        logger.info("注文された商品 = " + orderSummary.getOrderDetails().size());
+        logger.info("キューから受け取った注文詳細の数 = " + orderSummary.getOrderDetails().size());
         orderSummaryRepository.save(orderSummary);
-        URI location = createLocation(orderSummary.getSummaryId());
-        return ResponseEntity.created(location).build();
-    }
-
-    private URI createLocation(Integer id) {
-        URI location = MvcUriComponentsBuilder.fromController(this.getClass())
-                .pathSegment(id.toString())
-                .build().encode().toUri();
-        return location;
     }
 
     @PatchMapping("/{summaryId}")
