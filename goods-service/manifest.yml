@@ -10,3 +10,4 @@ applications:
      - service-registry
      - postgresql
      - circuit-breaker-dashboard
+     - rabbitmq-binder

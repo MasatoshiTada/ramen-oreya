@@ -9,3 +9,4 @@ applications:
      - config-server
      - service-registry
      - circuit-breaker-dashboard
+     - rabbitmq-binder

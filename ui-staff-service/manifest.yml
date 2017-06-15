@@ -10,3 +10,4 @@ applications:
      - service-registry
      - circuit-breaker-dashboard
      - ramen-cache
+     - rabbitmq-binder
