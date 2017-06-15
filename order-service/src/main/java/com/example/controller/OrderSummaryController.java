@@ -1,5 +1,6 @@
 package com.example.controller;
 
+import com.example.Sink2;
 import com.example.entity.OrderSummary;
 import com.example.repository.OrderSummaryRepository;
 import org.slf4j.Logger;
@@ -38,9 +39,32 @@ public class OrderSummaryController {
         orderSummaryRepository.save(orderSummary);
     }
 
-    @PatchMapping("/{summaryId}")
-    @ResponseStatus(HttpStatus.OK)
-    public void patchProvided(@PathVariable Integer summaryId) {
-        orderSummaryRepository.updateProvided(summaryId);
+    @StreamListener(Sink2.INPUT)
+    public void patchProvided(SummaryIdHolder summaryIdHolder) {
+        orderSummaryRepository.updateProvided(summaryIdHolder.getSummaryId());
+        logger.info("{}の注文を提供済みにしました", summaryIdHolder);
     }
+
+    private static class SummaryIdHolder {
+        private Integer summaryId;
+
+        public SummaryIdHolder() {
+        }
+
+        public Integer getSummaryId() {
+            return summaryId;
+        }
+
+        public void setSummaryId(Integer summaryId) {
+            this.summaryId = summaryId;
+        }
+
+        @Override
+        public String toString() {
+            return "SummaryIdHolder{" +
+                    "summaryId=" + summaryId +
+                    '}';
+        }
+    }
+
 }

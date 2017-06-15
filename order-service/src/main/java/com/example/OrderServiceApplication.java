@@ -18,7 +18,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter
 @SpringBootApplication
 @EntityScan(basePackages = {"com.example.entity", "org.springframework.data.jpa.convert.threeten"})
 @EnableDiscoveryClient
-@EnableBinding(Sink.class)
+@EnableBinding({Sink.class, Sink2.class})
 public class OrderServiceApplication {
 
     public static void main(String[] args) {

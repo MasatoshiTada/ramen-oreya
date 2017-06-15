@@ -12,15 +12,18 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.client.loadbalancer.LoadBalanced;
+import org.springframework.cloud.stream.messaging.Source;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import java.net.URI;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -34,15 +37,18 @@ public class OrderServiceImpl implements OrderService {
     private final GoodsService goodsService;
     private final String orderServiceUrl;
     private final OrderSummaryListDtoRepository orderSummaryListDtoRepository;
+    private final Source source;
 
     public OrderServiceImpl(@LoadBalanced RestTemplate restTemplate,
                             GoodsService goodsService,
                             @Value("${orders.url}") String orderServiceUrl,
-                            OrderSummaryListDtoRepository orderSummaryListDtoRepository) {
+                            OrderSummaryListDtoRepository orderSummaryListDtoRepository,
+                            Source source) {
         this.restTemplate = restTemplate;
         this.goodsService = goodsService;
         this.orderServiceUrl = orderServiceUrl;
         this.orderSummaryListDtoRepository = orderSummaryListDtoRepository;
+        this.source = source;
     }
 
     /**
@@ -78,7 +84,7 @@ public class OrderServiceImpl implements OrderService {
      * キャッシュしていた注文一覧を返す。
      */
     public List<OrderSummary> createDefaultOrders(String shopId, Throwable throwable) {
-        logger.error("order-serviceへの接続に失敗しました。フォールバックします。", throwable);
+        logger.error("staff-api-gatewayへの接続に失敗しました。フォールバックします。", throwable);
         logger.info("Redisからキャッシュの注文一覧を取得します");
         OrderSummaryListDto orderSummaryListDto = orderSummaryListDtoRepository.findOne(shopId);
         if (orderSummaryListDto != null) {
@@ -97,7 +103,11 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public void updateProvided(String shopId, Integer summaryId) {
         logger.info("注文済みに更新します : shopId = {}, summaryId = {}", shopId, summaryId);
-        restTemplate.patchForObject(orderServiceUrl + "/{summaryId}", null, Void.class, summaryId);
+
+        // キューに更新情報を送信
+        SummaryIdHolder summaryIdHolder = new SummaryIdHolder(summaryId);
+        source.output().send(MessageBuilder.withPayload(summaryIdHolder).build());
+
         // Redisからキャッシュ取得
         logger.info("Redisからキャッシュの注文一覧を取得します");
         OrderSummaryListDto orderSummaryListDto = orderSummaryListDtoRepository.findOne(shopId);
@@ -109,5 +119,21 @@ public class OrderServiceImpl implements OrderService {
         // キャッシュに再保存
         logger.info("Redisに注文一覧を再保存します");
         orderSummaryListDtoRepository.save(new OrderSummaryListDto(shopId, filteredOrderSummaryList));
+    }
+
+    private static class SummaryIdHolder {
+        private Integer summaryId;
+
+        public SummaryIdHolder(Integer summaryId) {
+            this.summaryId = summaryId;
+        }
+
+        public Integer getSummaryId() {
+            return summaryId;
+        }
+
+        public void setSummaryId(Integer summaryId) {
+            this.summaryId = summaryId;
+        }
     }
 }
